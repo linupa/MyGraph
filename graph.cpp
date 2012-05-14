@@ -13,7 +13,7 @@
 #include <FL/Fl_Value_Slider.H>
 
 #define BUFLEN 1024
-#define SRV_IP "146.6.88.4"
+//#define SRV_IP "146.6.88.4"
 
 static int win_width(500);
 static int win_height(400);
@@ -376,9 +376,9 @@ int main(void)
   _value.push_back(init_value);
 
   memset((char *) &si_other, 0, sizeof(si_other));
-  si_other.sin_family = AF_INET;
-  si_other.sin_port = htons(0xaa55);
-  si_other.sin_addr.s_addr = inet_addr(SRV_IP);
+//  si_other.sin_family = AF_INET;
+//  si_other.sin_port = htons(0xaa55);
+//  si_other.sin_addr.s_addr = inet_addr(SRV_IP);
 
   MyWindow win(win_width, win_height, win_title);
 
