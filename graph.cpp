@@ -247,7 +247,7 @@ public:
 	static void cb_quit(Fl_Widget *widget, void *param);
 	static void cb_reset(Fl_Widget *widget, void *param);
 	static void cb_pause(Fl_Widget *widget, void *param);
-	static void cb_head(Fl_Widget *widget, void *param);
+//	static void cb_head(Fl_Widget *widget, void *param);
 };
 
 char *slider_name[] = {
@@ -329,6 +329,7 @@ cb_quit(Fl_Widget *widget, void *param)
 	reinterpret_cast<MyWindow*>(param)->hide();
 }
 
+#if 0
 int s = 0;
 struct sockaddr_in si_other;
 void MyWindow::
@@ -355,6 +356,7 @@ cb_head(Fl_Widget *widget, void *param)
 		printf("HEAD EVENT: %d (%d %d %d %d %d)\n", value, head_info[0], head_info[1], head_info[2], head_info[3], head_info[4]);
 	}
 }
+#endif
 
 int main(void)
 {
