@@ -1,7 +1,13 @@
-cflags= -g -arch x86_64 \
-		-isysroot /Developer/SDKs/MacOSX10.6.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names \
-		-framework Carbon -framework Cocoa -framework ApplicationServices /usr/local/lib/libfltk.a -lpthread
+OS = $(shell uname -s)
+MACHINE = $(shell uname -m)
+BUILD = $(OS)_$(MACHINE)
+TARGET=graph
+SRCS = graph.cpp
 
-graph: graph.cpp
+cflags= -g -I . -I /usr/include -I../libs\
+		-lfltk -L ../libs/$(BUILD)  -lpthread -lm -lfftw3 -lutils -L $(BUILD)
+$(TARGET): $(SRCS)
 	g++ -o $@ $^ $(cflags)
 
+clean:
+	rm $(TARGET)
