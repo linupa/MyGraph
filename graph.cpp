@@ -24,7 +24,6 @@
 #include <FL/Fl_Value_Slider.H>
 
 #include "graph.h"
-#include "Comm.h"
 
 #define BUFLEN 1024
 #define RGB(r,g,b) (((r)<<24)|((g)<<16)|((b)<<8))
@@ -56,8 +55,6 @@ int   gPort = 0;
 pthread_mutex_t data_mutex;
 int   gSocketId = -1;
 
-Comm *statComm;
-
 using namespace std;
 
 vector<values> _value;
@@ -83,6 +80,14 @@ int colors[] = {
   RGB(255,0,255)
 };
 
+typedef struct
+{
+  pthread_mutex_t	*mutex;
+  void *win;
+  int portNum;
+} udp_arg;
+
+
 class TrackWindow : public Fl_Widget
 {
 public:
@@ -98,7 +103,7 @@ public:
 
 int open_socket(int portNum)
 {
-    struct sockaddr_in si_me, si_other;
+  struct sockaddr_in si_me, si_other;
   int errno;
 
   if ( gSocketId != -1 )
@@ -136,15 +141,14 @@ void close_socket(void)
 
 void *receive_udp(void *arg)
 {
-    struct sockaddr_in si_other;
-    int slen;
+  struct sockaddr_in si_other;
+  int slen;
   pthread_mutex_t *mutex;
 
   udp_arg *Arg = (udp_arg *)arg;
   TrackWindow *pWidget = (TrackWindow *)Arg->win;
   mutex = Arg->mutex;
   free(arg);
-
 
   int length, index = 0;
   int num_buffer = MAX_IN;
@@ -156,7 +160,7 @@ void *receive_udp(void *arg)
   fd_set rd_set;
   struct timeval tv;
   state = 1;
-  open_socket( 51125 );
+  open_socket( Arg->portNum );
   while (1)
   {
     FD_ZERO(&rd_set);
@@ -402,8 +406,6 @@ draw()
   vector<values>::iterator end = _value.end();
   it += skip;
 
-  int alert_from, alert_to;
-  bool alerted = false;
   for ( i = 0 ; it < end ; ++i )
   {
     curr = *it;
@@ -414,15 +416,6 @@ draw()
     {
       x_p = (i-1)*step;
       x_c = x_p + step;
-
-      if (!alerted && curr.value[10]) {
-        alert_from = x_c;
-      } else if (alerted && !curr.value[10]) {
-        alert_to = x_c;
-        fl_color(RGB(255,100,100));
-        fl_rectf(alert_from, 0, alert_to, height);
-      }
-      alerted = curr.value[10];
 
       for ( j = 0 ; j < num_disp ; j++ )
       {
@@ -716,11 +709,16 @@ cb_check(Fl_Widget *widget, void *param)
   }
 }
 
-int main(void)
+int main(int argc, const char *argv[])
 {
   char buf[BUFLEN];
-
   pthread_t udp_receiver;
+
+  if (argc  < 2 )
+  {
+    fprintf(stderr, "Usage: %s <port number>\n", argv[0]);
+    exit(-1);
+  }
 
   MyWindow win(win_width, win_height, win_title);
 
@@ -729,6 +727,7 @@ int main(void)
   udp_arg *arg = (udp_arg *)malloc(sizeof(udp_arg));
   arg->mutex = &data_mutex;
   arg->win = (void *)&win;
+  arg->portNum = atoi(argv[1]);
   pthread_create( &udp_receiver, NULL, receive_udp, (void*)arg);
 
   int ret = Fl::run();
